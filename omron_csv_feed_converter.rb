@@ -1,6 +1,5 @@
 require_relative 'omron_feed_generator'
 require 'csv'
-require 'pry'
 
 class OmronCsvFeedConverter
 
@@ -144,7 +143,6 @@ x = OmronCsvFeedConverter.new
 
 x.create_categories
 x.get_brand
-#binding.pry
 x.create_header
 x.build_brands
 x.build_categories
