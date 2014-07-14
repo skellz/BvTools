@@ -16,7 +16,7 @@ class OmronFeedGenerator
 	end
 
 	def build_name(input)
-    "<Name>#{input.split(' ').map { |x| x.capitalize }.join(' ')}</Name>"
+    "<Name>#{input.split(/[-_ ]/).map { |x| x.capitalize }.join(' ')}</Name>"
 	end
 
 	def build_externalid(input)
@@ -111,8 +111,8 @@ class OmronFeedGenerator
   end
 end
 
-x = OmronFeedGenerator.new
-x.build_brands
-x.build_categories
-x.build_products
+# x = OmronFeedGenerator.new
+# x.build_brands
+# x.build_categories
+# x.build_products
 
