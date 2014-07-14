@@ -1,5 +1,6 @@
 require_relative 'omron_feed_generator'
 require 'csv'
+require 'pry'
 
 class OmronCsvFeedConverter
 
@@ -24,17 +25,16 @@ class OmronCsvFeedConverter
 			category_external_id = row['CategoryExternalId']
 			pdp_url = row['ProductPageUrl']
 			image_url = row['ImageUrl']
-			upc = row['upc']
+			upc = row['UPC']
+			mpn = row['ManufacturerPartNumber']
 
-			@products["#{name}"] = ["#{category_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}"]
-			#binding.pry
+			@products["#{name}"] = ["#{category_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}", "#{upc}", "#{mpn}"]
 		end
 	end
 
 	def create_header
 		@feed << "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<!-- See here for a full feed example https://github.com/bazaarvoice/HostedUIResources/blob/master/ProductFeed/ExampleProductFeed.xml -->
-<Feed xmlns=\"http://www.bazaarvoice.com/xs/PRR/ProductFeed/5.6\" name=\"omron\" incremental=\"false\" extractDate=\"2013-08-16T12:00:00.000000\">\n"
+<Feed xmlns=\"http://www.bazaarvoice.com/xs/PRR/ProductFeed/5.6\" name=\"#{@input.downcase}\" incremental=\"false\" extractDate=\"2013-08-16T12:00:00.000000\">\n"
 	end
 
 	def get_input
@@ -46,7 +46,7 @@ class OmronCsvFeedConverter
 	end
 
 	def build_externalid(input)
-		"<ExternalId>#{input.downcase.gsub(' ', '_')}</ExternalId>"
+		"<ExternalId>#{input.downcase.gsub(' ', '')}</ExternalId>"
 	end
 
 	def build_catergory_external_id(input)
@@ -59,6 +59,18 @@ class OmronCsvFeedConverter
 
 	def build_image_url(input)
     "<ImageUrl><![CDATA[#{input}]]></ImageUrl>"
+  end
+
+  def build_upc(input)
+  	"<UPCs>
+  	      <UPC>#{input.gsub(' ', '')}</UPC>
+  	    </UPCs>"
+  end
+
+  def build_mpn(input)
+  	"<ManufacturerPartNumbers>
+          <ManufacturerPartNumber>#{input}</ManufacturerPartNumber>
+        </ManufacturerPartNumbers>"
   end
 
   def build_description(input)
@@ -102,6 +114,8 @@ class OmronCsvFeedConverter
   		#{build_product_page_url(array[1])}
   		#{build_image_url(array[2])}
   		#{build_catergory_external_id(array[0])}
+  		#{build_mpn(array[5])}
+  		#{build_upc(array[4])}
   		<Attributes>
        <Attribute id=\"BV_FE_FAMILY\">
          <Value>#{array[0]}</Value>
