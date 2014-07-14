@@ -1,6 +1,4 @@
-require_relative 'omron_feed_generator'
 require 'csv'
-require 'pry'
 
 class OmronCsvFeedConverter
 
