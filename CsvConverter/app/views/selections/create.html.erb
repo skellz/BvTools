@@ -1,0 +1,17 @@
+<%= simple_form_for @selection do |f| %>
+	<h3>Check Brands if there is more than one Brand Name</h3>
+	<%= f.input :brands %>
+	<h3>Category Selections</h3>
+	<%= f.input :external_id %>
+	<%= f.input :locale %>
+	<%= f.input :image_url %>
+	<h3>Product Selections</h3>
+	<%= f.input :description %>
+	<%= f.input :mpn %>
+	<%= f.input :upc %>
+	<%= f.input :ean %>
+	<%= f.input :model_num %>
+	<%= f.input :isbn %>
+	<br>
+	<%= f.button :submit %>
+<% end %>

@@ -17,9 +17,9 @@
 development:
   adapter: postgresql
   encoding: unicode
-  database: CsvConverter_development
+  database: csv_converter_development
   pool: 5
-  username: CsvConverter
+  username: 
   password:
 
   # Connect on a TCP socket. Omitted by default since the client uses a
@@ -46,15 +46,15 @@ development:
 test:
   adapter: postgresql
   encoding: unicode
-  database: CsvConverter_test
+  database: csv_converter_test
   pool: 5
-  username: CsvConverter
+  username: 
   password:
 
 production:
   adapter: postgresql
   encoding: unicode
-  database: CsvConverter_production
+  database: csv_converter_production
   pool: 5
-  username: CsvConverter
+  username: 
   password:

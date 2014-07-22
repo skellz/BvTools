@@ -1,6 +1,6 @@
 require 'csv'
 
-class OmronCsvFeedConverter
+class CsvFeedConverter
 
 	def initialize
 		@products = {}
@@ -47,12 +47,20 @@ class OmronCsvFeedConverter
 		"<ExternalId>#{input.downcase.gsub(' ', '')}</ExternalId>"
 	end
 
+	def build_brand_externalid(input)
+		"<BrandExternalId>#{input.downcase.gsub(' ', '')}</BrandExternalId>"
+	end
+
 	def build_catergory_external_id(input)
   	"<CategoryExternalId>#{input.downcase.gsub(' ', '_')}</CategoryExternalId>"
   end
 
   def build_product_page_url(input)
     "<ProductPageUrl>#{input}</ProductPageUrl>"
+	end
+
+	def build_category_page_url
+    "<CategoryPageUrl>http://www.omron-healthcare.com/eu/en/our-products</CategoryPageUrl>"
 	end
 
 	def build_image_url(input)
@@ -99,6 +107,7 @@ class OmronCsvFeedConverter
   	  @feed << "      <Category>\n"
   	  @feed << "        #{build_externalid(x)}
   	    #{build_name(x)}
+  	    #{build_category_page_url}
       </Category>\n"
     end
   	@feed << "    </Categories>\n"
@@ -109,6 +118,7 @@ class OmronCsvFeedConverter
   		#{build_externalid(array[3])}
   		#{build_name(name)}
   		#{build_description(name)}
+  		#{build_brand_externalid(@input)}
   		#{build_product_page_url(array[1])}
   		#{build_image_url(array[2])}
   		#{build_catergory_external_id(array[0])}
@@ -151,7 +161,7 @@ class OmronCsvFeedConverter
   end
 end
 
-x = OmronCsvFeedConverter.new
+x = CsvFeedConverter.new
 
 x.create_categories
 x.get_brand
@@ -159,6 +169,3 @@ x.create_header
 x.build_brands
 x.build_categories
 x.build_products
-
-
-
