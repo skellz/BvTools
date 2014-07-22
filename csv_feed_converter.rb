@@ -4,16 +4,15 @@ class CsvFeedConverter
 
 	def initialize
 		@products = {}
-    @categories = []
+    @categories = {}
     read_csv
     @feed = File.open('omron_feed.xml', 'w')
 	end
 
 	def create_categories
 		@products.each do |k,v|
-    	@categories << v[0]
+    	@categories["#{v[0]}"] = "#{v[6]}"
     end
-    @categories.uniq!
   end
 
   def read_csv
@@ -25,8 +24,9 @@ class CsvFeedConverter
 			image_url = row['ImageUrl']
 			upc = row['UPC']
 			mpn = row['ManufacturerPartNumber']
+			category_url = row['CategoryPageURL']
 
-			@products["#{name}"] = ["#{category_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}", "#{upc}", "#{mpn}"]
+			@products["#{name}"] = ["#{category_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}", "#{upc}", "#{mpn}", "#{category_url}"]
 		end
 	end
 
@@ -47,12 +47,20 @@ class CsvFeedConverter
 		"<ExternalId>#{input.downcase.gsub(' ', '')}</ExternalId>"
 	end
 
+	def build_brand_externalid(input)
+		"<BrandExternalId>#{input.downcase.gsub(' ', '')}</BrandExternalId>"
+	end
+
 	def build_catergory_external_id(input)
   	"<CategoryExternalId>#{input.downcase.gsub(' ', '_')}</CategoryExternalId>"
   end
 
   def build_product_page_url(input)
     "<ProductPageUrl>#{input}</ProductPageUrl>"
+	end
+
+	def build_category_page_url(input)
+    "<CategoryPageUrl>#{input}</CategoryPageUrl>"
 	end
 
 	def build_image_url(input)
@@ -95,10 +103,11 @@ class CsvFeedConverter
 
   def build_categories
   	@feed << "    <Categories>\n"
-  	@categories.each do |x|
+  	@categories.each do |k,v|
   	  @feed << "      <Category>\n"
-  	  @feed << "        #{build_externalid(x)}
-  	    #{build_name(x)}
+  	  @feed << "        #{build_externalid(k)}
+  	    #{build_name(k)}
+  	    #{build_category_page_url(v)}
       </Category>\n"
     end
   	@feed << "    </Categories>\n"
@@ -109,6 +118,7 @@ class CsvFeedConverter
   		#{build_externalid(array[3])}
   		#{build_name(name)}
   		#{build_description(name)}
+  		#{build_brand_externalid(@input)}
   		#{build_product_page_url(array[1])}
   		#{build_image_url(array[2])}
   		#{build_catergory_external_id(array[0])}
