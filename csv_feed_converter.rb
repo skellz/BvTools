@@ -182,7 +182,6 @@ end
 x = CsvFeedConverter.new
 
 x.create_categories
-x.get_brand
 x.create_header
 x.build_brands
 x.build_categories
