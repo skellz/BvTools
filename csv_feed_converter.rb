@@ -5,18 +5,23 @@ class CsvFeedConverter
 	def initialize
 		@products = {}
     @categories = {}
+    @brands = {}
     read_csv
-    @feed = File.open('omron_feed.xml', 'w')
+    @feed = File.open('kraft_feed.xml', 'w')
 	end
 
 	def create_categories
 		@products.each do |k,v|
     	@categories["#{v[0]}"] = "#{v[6]}"
     end
+    def create_brands
+		@products.each do |k,v|
+    	@brands["#{v[0]}"] = "#{v[6]}"
+    end
   end
 
   def read_csv
-		CSV.foreach('omron_feed.csv', headers: true) do |row|
+		CSV.foreach('kraft_feed.csv', headers: true) do |row|
 			external_id = row['ExternalID']
 			name = row['Name']
 			category_external_id = row['CategoryExternalId']
@@ -25,8 +30,9 @@ class CsvFeedConverter
 			upc = row['UPC']
 			mpn = row['ManufacturerPartNumber']
 			category_url = row['CategoryPageURL']
+			brand_external_id = row['BrandExternalId']
 
-			@products["#{name}"] = ["#{category_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}", "#{upc}", "#{mpn}", "#{category_url}"]
+			@products["#{name}"] = ["#{category_external_id}", "#{brand_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}", "#{upc}", "#{mpn}", "#{category_url}"]
 		end
 	end
 
@@ -53,6 +59,10 @@ class CsvFeedConverter
 
 	def build_catergory_external_id(input)
   	"<CategoryExternalId>#{input.downcase.gsub(' ', '_')}</CategoryExternalId>"
+  end
+  
+        def build_brand_external_id(input)
+  	"<BrandExternalId>#{input.downcase.gsub(' ', '_')}</BrandExternalId>"
   end
 
   def build_product_page_url(input)
@@ -87,10 +97,6 @@ class CsvFeedConverter
 		"<Value>#{input.downcase.gsub(' ', '_')}</Value>"
 	end
 
-	def get_brand
-		puts 'Enter Brand name:'
-  	get_input
-  end
 
   def build_brands
   	@feed << "    <Brands>
@@ -111,6 +117,17 @@ class CsvFeedConverter
       </Category>\n"
     end
   	@feed << "    </Categories>\n"
+  end
+  
+  def build_brands
+  	@feed << "    <Brands>\n"
+  	@brands.each do |k,v|
+  	  @feed << "      <Brand>\n"
+  	  @feed << "        #{build_externalid(k)}
+  	    #{build_name(k)}
+      </Brand>\n"
+    end
+  	@feed << "    </Brands>\n"
   end
 
   def build_sub_products(name, array)
@@ -140,6 +157,7 @@ class CsvFeedConverter
   		#{build_product_page_url(array[1])}
   		#{build_image_url(array[2])}
   		#{build_catergory_external_id(array[0])}
+  		#{build_brand_external_id(array[0])}
   		<Attributes>
        <Attribute id=\"BV_FE_FAMILY\">
          <Value>#{array[0]}</Value>
