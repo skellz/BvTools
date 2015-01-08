@@ -4,15 +4,15 @@ class CsvFeedConverter
 
 	def initialize
 		@products = {}
-    @categories = {}
+    @categories = []
+    @sub_categories = {}
+    @img_url = {}
     read_csv
     @feed = File.open('omron_feed.xml', 'w')
 	end
 
 	def create_categories
-		@products.each do |k,v|
-    	@categories["#{v[0]}"] = "#{v[6]}"
-    end
+    @categories = @sub_categories.values.reduce(:+).uniq
   end
 
   def read_csv
@@ -29,6 +29,14 @@ class CsvFeedConverter
 			@products["#{name}"] = ["#{category_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}", "#{upc}", "#{mpn}", "#{category_url}"]
 		end
 	end
+
+  def read_img_url_csv
+    CSV.foreach('img_url.csv', header: true) do |row|
+      ref_id = row['RefId']
+      url = row['Url']
+      @img_url["#{ref_id}"] = url
+    end
+  end
 
 	def create_header
 		@feed << "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -50,8 +58,12 @@ class CsvFeedConverter
 	def build_brand_externalid(input)
 		"<BrandExternalId>#{input.downcase.gsub(' ', '')}</BrandExternalId>"
 	end
-
-	def build_catergory_external_id(input)
+  
+  def build_parent_externalid(input)
+    "<ParentExternalId>#{input.downcase.gsub(' ', '')}</ParentExternalId>"
+  end
+	
+  def build_catergory_external_id(input)
   	"<CategoryExternalId>#{input.downcase.gsub(' ', '_')}</CategoryExternalId>"
   end
 
@@ -103,14 +115,29 @@ class CsvFeedConverter
 
   def build_categories
   	@feed << "    <Categories>\n"
-  	@categories.each do |k,v|
+  	@categories.each do |x|
   	  @feed << "      <Category>\n"
-  	  @feed << "        #{build_externalid(k)}
-  	    #{build_name(k)}
-  	    #{build_category_page_url(v)}
+  	  @feed << "        #{build_externalid(x)}
+  	    #{build_name(x)}
+  	    #{build_category_page_url("test.com")}
       </Category>\n"
     end
   	@feed << "    </Categories>\n"
+  end
+
+  def build_sub_categories #For Categories with Parent Ids
+    @feed << "    <Categories>\n"
+    @sub_categories.each do |k,v|
+      @feed << "      <Category>\n"
+      @feed << "        #{build_externalid(k)}"
+      v.each do |x|
+        @feed << "        #{build_parent_externalid(x)}"
+      end
+      @feed << "        #{build_name(k)}
+        #{build_category_page_url("test.com")}
+      </Category>\n"
+    end
+    @feed << "    </Categories>\n"
   end
 
   def build_sub_products(name, array)
