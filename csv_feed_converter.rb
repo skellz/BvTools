@@ -1,11 +1,12 @@
 require 'csv'
+require 'pry'
 
 class CsvFeedConverter
 
 	def initialize
 		@products = {}
     @categories = {}
-    @brands = {}
+    @brands = []
     read_csv
     @feed = File.open('kraft_feed.xml', 'w')
 	end
@@ -14,10 +15,13 @@ class CsvFeedConverter
 		@products.each do |k,v|
     	@categories["#{v[0]}"] = "#{v[6]}"
     end
-    def create_brands
+  end
+
+  def create_brands
 		@products.each do |k,v|
-    	@brands["#{v[0]}"] = "#{v[6]}"
+    	@brands << k[2]
     end
+    @brands.uniq!
   end
 
   def read_csv
@@ -32,6 +36,7 @@ class CsvFeedConverter
 			category_url = row['CategoryPageURL']
 			brand_external_id = row['BrandExternalId']
 
+
 			@products["#{name}"] = ["#{category_external_id}", "#{brand_external_id}", "#{pdp_url}", "#{image_url}", "#{external_id}", "#{upc}", "#{mpn}", "#{category_url}"]
 		end
 	end
@@ -39,10 +44,6 @@ class CsvFeedConverter
 	def create_header
 		@feed << "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <Feed xmlns=\"http://www.bazaarvoice.com/xs/PRR/ProductFeed/5.6\" name=\"#{@input.downcase}\" incremental=\"false\" extractDate=\"2013-08-16T12:00:00.000000\">\n"
-	end
-
-	def get_input
-		@input = gets.chomp.downcase
 	end
 
 	def build_name(input)
@@ -97,16 +98,6 @@ class CsvFeedConverter
 		"<Value>#{input.downcase.gsub(' ', '_')}</Value>"
 	end
 
-
-  def build_brands
-  	@feed << "    <Brands>
-  	  <Brand>
-  		  #{build_externalid(@input)}
-  		  #{build_name(@input)}
-  	  </Brand>
-    </Brands>\n"
-  end
-
   def build_categories
   	@feed << "    <Categories>\n"
   	@categories.each do |k,v|
@@ -121,13 +112,12 @@ class CsvFeedConverter
   
   def build_brands
   	@feed << "    <Brands>\n"
-  	@brands.each do |k,v|
+  	@brands.each do |x|
   	  @feed << "      <Brand>\n"
-  	  @feed << "        #{build_externalid(k)}
-  	    #{build_name(k)}
+  	  @feed << "        #{build_externalid(x)}
+  	    #{build_name(x)}
       </Brand>\n"
     end
-  	@feed << "    </Brands>\n"
   end
 
   def build_sub_products(name, array)
@@ -157,7 +147,6 @@ class CsvFeedConverter
   		#{build_product_page_url(array[1])}
   		#{build_image_url(array[2])}
   		#{build_catergory_external_id(array[0])}
-  		#{build_brand_external_id(array[0])}
   		<Attributes>
        <Attribute id=\"BV_FE_FAMILY\">
          <Value>#{array[0]}</Value>
@@ -182,6 +171,7 @@ end
 x = CsvFeedConverter.new
 
 x.create_categories
+x.create_brands
 x.create_header
 x.build_brands
 x.build_categories
