@@ -7,6 +7,7 @@ class CsvFeedConverter
     @categories = []
     @sub_categories = {}
     @img_url = {}
+    @brands = []
     read_csv
     @feed = File.open('omron_feed.xml', 'w')
 	end
@@ -67,6 +68,13 @@ class CsvFeedConverter
   	"<CategoryExternalId>#{input.downcase.gsub(' ', '_')}</CategoryExternalId>"
   end
 
+  def create_brands
+    @products.each do |k,v|
+      @brands << k[2]
+    end
+    @brands.uniq!
+  end
+
   def build_product_page_url(input)
     "<ProductPageUrl>#{input}</ProductPageUrl>"
 	end
@@ -105,12 +113,13 @@ class CsvFeedConverter
   end
 
   def build_brands
-  	@feed << "    <Brands>
-  	  <Brand>
-  		  #{build_externalid(@input)}
-  		  #{build_name(@input)}
-  	  </Brand>
-    </Brands>\n"
+    @feed << "    <Brands>\n"
+    @brands.each do |x|
+      @feed << "      <Brand>\n"
+      @feed << "        #{build_externalid(x)}
+        #{build_name(x)}
+      </Brand>\n"
+    end
   end
 
   def build_categories
@@ -191,7 +200,7 @@ end
 x = CsvFeedConverter.new
 
 x.create_categories
-x.get_brand
+x.create_brands
 x.create_header
 x.build_brands
 x.build_categories
